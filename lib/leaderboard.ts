@@ -3,9 +3,8 @@ import { eq, desc, sql, and, gte } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
 // Constants for points calculation
-const BASE_POINTS_PER_1000_RESOURCES = 100
-const SET_ACTION_POINTS = 1
-const REFINED_ACTION_POINTS = 2 // Special points for Refined category
+const BASE_POINTS_PER_1000_RESOURCES = 1000
+const SET_ACTION_POINTS = 0
 
 // Status bonuses (as decimal percentages)
 const STATUS_BONUSES = {
@@ -27,9 +26,7 @@ export interface PointsCalculation {
   finalPoints: number
 }
 
-/**
- * Calculate points for a resource action
- */
+// Calculate points for a resource action
 export function calculatePoints(
   actionType: 'ADD' | 'SET' | 'REMOVE',
   quantityChanged: number,
@@ -37,8 +34,8 @@ export function calculatePoints(
   resourceStatus: string,
   resourceCategory: string
 ): PointsCalculation {
-  // No points for REMOVE actions or ineligible categories
-  if (actionType === 'REMOVE' || !ELIGIBLE_CATEGORIES.includes(resourceCategory as any)) {
+  // Only give points when adding to eligible categories
+  if (actionType !== 'ADD' || !ELIGIBLE_CATEGORIES.includes(resourceCategory as any)) {
     return {
       basePoints: 0,
       resourceMultiplier,
@@ -47,35 +44,12 @@ export function calculatePoints(
     }
   }
 
-  // Special handling for Refined category - always 100 points flat
-  if (resourceCategory === 'Refined') {
-    return {
-      basePoints: REFINED_ACTION_POINTS,
-      resourceMultiplier: 0, // Show as 0x for refined
-      statusBonus: 0,
-      finalPoints: REFINED_ACTION_POINTS
-    }
-  }
-
   let basePoints = 0
-  
-  if (actionType === 'SET') {
-    // SET actions get fixed points regardless of quantity - NO MULTIPLIERS OR BONUSES
-    return {
-      basePoints: SET_ACTION_POINTS,
-      resourceMultiplier: 1.0,
-      statusBonus: 0,
-      finalPoints: SET_ACTION_POINTS
-    }
-  } else if (actionType === 'ADD') {
-    // ADD actions get points based on quantity added (0.1 points per resource, so 100 points per 1000)
-    basePoints = (quantityChanged / 1000) * BASE_POINTS_PER_1000_RESOURCES
-  }
-
-  // Apply resource multiplier (only for ADD actions)
+  // ADD actions get points based on quantity added
+  basePoints = (quantityChanged / 1000) * BASE_POINTS_PER_1000_RESOURCES
+  // Apply resource multiplier
   const multipliedPoints = basePoints * resourceMultiplier
-
-  // Apply status bonus (only for ADD actions)
+  // Apply status bonus
   const statusBonus = STATUS_BONUSES[resourceStatus as keyof typeof STATUS_BONUSES] || 0
   const statusBonusAmount = multipliedPoints * statusBonus
   const finalPoints = multipliedPoints + statusBonusAmount
