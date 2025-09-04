@@ -250,9 +250,7 @@ export default function LeaderboardPage() {
             📊 How Points Work
           </h3>
           <div className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
-            <p><strong>ADD Actions:</strong> 0.1 points per resource (100 points per 1000 resources)</p>
-            <p><strong>SET Actions:</strong> Fixed 1 points regardless of quantity</p>
-            <p><strong>Refined Actions:</strong> Fixed 2 points for any action (special category)</p>
+            <p><strong>ADD Actions:</strong> 1 point per resource</p>
             <p><strong>Multipliers:</strong> Resources have different point multipliers (0.1x to 5x+)</p>
             <p><strong>Status Bonuses:</strong> Critical resources +10%, Below Target +5%</p>
             <p><strong>Categories:</strong> Raw, Components, and Refined categories earn points</p>
